@@ -1,0 +1,182 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Sakura.AspNetCore.SignalR.HubProxyGenerators</name>
+    </assembly>
+    <members>
+        <member name="T:Sakura.AspNetCore.SignalR.HubProxyGenerators.ClientCallbackGenerator">
+            <summary>
+            Provide methods to generate SignalR client callback message handlers.
+            </summary>
+        </member>
+        <member name="T:Sakura.AspNetCore.SignalR.HubProxyGenerators.ReflectionHelper">
+            <summary>
+            Provide extension method for cross appdomain reflection operations. This class is static.
+            </summary>
+        </member>
+        <member name="M:Sakura.AspNetCore.SignalR.HubProxyGenerators.ReflectionHelper.NameEqualsTo(System.Type,System.Type)">
+            <summary>
+            Indicates whether 2 types can be considered as equivalent using full name comparision.
+            </summary>
+            <param name="type1">The first type instance.</param>
+            <param name="type2">The second type instance.</param>
+            <returns>If <paramref name="type1"/> equals to <paramref name="type2"/>, returns <c>true</c>; otherwise, returns <c>false</c>.</returns>
+            <remarks>
+            In order to suppress the type mapping difference caused by different assembly version or app domains, this method uses <see cref="P:System.Type.FullName"/> to compare 2 types.
+            </remarks>
+        </member>
+        <member name="T:Sakura.AspNetCore.SignalR.HubProxyGenerators.SignalRHubProxyGenerator">
+            <summary>
+            Provide ability to generate proxy service class for SignalR Hub.
+            </summary>
+        </member>
+        <member name="P:Sakura.AspNetCore.SignalR.HubProxyGenerators.SignalRHubProxyGenerator.LoadContext">
+            <summary>
+            The <see cref="T:System.Reflection.MetadataLoadContext"/> service instance used to load assemblies.
+            </summary>
+        </member>
+        <member name="F:Sakura.AspNetCore.SignalR.HubProxyGenerators.SignalRHubProxyGenerator.HubTypeFullName">
+            <summary>
+            The full name of the hub type. This field is constant.
+            </summary>
+        </member>
+        <member name="F:Sakura.AspNetCore.SignalR.HubProxyGenerators.SignalRHubProxyGenerator.StrongClientHubTypeFullName">
+            <summary>
+            The full name of the hub type with a strong typed client. This field is constant.
+            </summary>
+        </member>
+        <member name="M:Sakura.AspNetCore.SignalR.HubProxyGenerators.SignalRHubProxyGenerator.LoadDll(System.String)">
+            <summary>
+            Load a DLL file into the load context.
+            </summary>
+            <param name="dllPath">The file path for the library.</param>
+            <returns>The loaded <see cref="T:System.Reflection.Assembly"/> object.</returns>
+        </member>
+        <member name="M:Sakura.AspNetCore.SignalR.HubProxyGenerators.SignalRHubProxyGenerator.Execute(Microsoft.CodeAnalysis.GeneratorExecutionContext)">
+            <inheritdoc />
+        </member>
+        <member name="M:Sakura.AspNetCore.SignalR.HubProxyGenerators.SignalRHubProxyGenerator.GenerateHubClients(Microsoft.CodeAnalysis.SemanticModel,Microsoft.CodeAnalysis.CSharp.Syntax.ClassDeclarationSyntax,System.Type)">
+            <summary>
+            Generate hub client message handlers.
+            </summary>
+        </member>
+        <member name="M:Sakura.AspNetCore.SignalR.HubProxyGenerators.SignalRHubProxyGenerator.GetHubClientType(System.Type)">
+            <summary>
+            Try get the client type of a hub.
+            </summary>
+            <param name="hubType">The hub type.</param>
+            <returns>The client type of the hub. If no client type can be determined, <c>null</c> will be returned.</returns>
+        </member>
+        <member name="M:Sakura.AspNetCore.SignalR.HubProxyGenerators.SignalRHubProxyGenerator.TryLoadBaseHubType(System.Type)">
+            <summary>
+            If the type is has a base type represents as the SignalR hub, get the base hub type instance.
+            </summary>
+            <param name="type">The actual hub type.</param>
+            <returns>The type represents as a SignalR hub. If the type is not a hub, returns <c>null</c>.</returns>
+        </member>
+        <member name="M:Sakura.AspNetCore.SignalR.HubProxyGenerators.SignalRHubProxyGenerator.GetTypeAndBases(System.Type)">
+            <summary>
+            Get all the types in the type inheritance tree for a specified type.
+            </summary>
+            <param name="type">The <see cref="T:System.Type"/> instance.</param>
+            <returns>The <see cref="T:System.Type"/> itself for <paramref name="type"/> and all of its base types.</returns>
+        </member>
+        <member name="M:Sakura.AspNetCore.SignalR.HubProxyGenerators.SignalRHubProxyGenerator.GenerateProxyForHubType(Microsoft.CodeAnalysis.SemanticModel,System.String,System.Type,System.Type)">
+            <summary>
+            Generate proxy type for hub type.
+            </summary>
+            <param name="model">The semantic model.</param>
+            <param name="hubClientTypeName">The name of the hub client type.</param>
+            <param name="hubType">The hub type.</param>
+            <param name="hubBaseType">The base type represents as the a SignalR hub.</param>
+            <returns></returns>
+        </member>
+        <member name="M:Sakura.AspNetCore.SignalR.HubProxyGenerators.SignalRHubProxyGenerator.GenerateProxyMethod(Microsoft.CodeAnalysis.SemanticModel,System.Reflection.MethodInfo)">
+            <summary>
+            Generate hub proxy method.
+            </summary>
+            <param name="model"></param>
+            <param name="hubMethod"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Sakura.AspNetCore.SignalR.HubProxyGenerators.SignalRHubProxyGenerator.Initialize(Microsoft.CodeAnalysis.GeneratorInitializationContext)">
+            <inheritdoc />
+        </member>
+        <member name="M:Sakura.AspNetCore.SignalR.HubProxyGenerators.SignalRHubProxyGenerator.AttachDebugger">
+            <summary>
+            Attach Debugger in debug mode. This method is for debugging only purpose.
+            </summary>
+        </member>
+        <member name="M:Sakura.AspNetCore.SignalR.HubProxyGenerators.SignalRHubProxyGenerator.Dispose">
+            <inheritdoc />
+        </member>
+        <member name="T:Sakura.AspNetCore.SignalR.HubProxyGenerators.SyntaxHelper">
+            <summary>
+            Provide helper method for syntax generation. This class is static.
+            </summary>
+        </member>
+        <member name="M:Sakura.AspNetCore.SignalR.HubProxyGenerators.SyntaxHelper.MemberAccess(Microsoft.CodeAnalysis.CSharp.Syntax.ExpressionSyntax,System.String,System.String[])">
+            <summary>
+            Access a chained member of an expression. 
+            </summary>
+            <param name="parent">The parent expression instance.</param>
+            <param name="memberName">The name of the member to be accessed for the <paramref name="parent"/>.</param>
+            <param name="memberPaths">The names of all following-up members to be accessed.</param>
+            <returns>The generated <see cref="T:Microsoft.CodeAnalysis.CSharp.Syntax.MemberAccessExpressionSyntax"/> instance.</returns>
+        </member>
+        <member name="M:Sakura.AspNetCore.SignalR.HubProxyGenerators.SyntaxHelper.ConditionalMemberAccess(Microsoft.CodeAnalysis.CSharp.Syntax.ExpressionSyntax,System.String,System.String[])">
+            <summary>
+            Conditional access a chained member of an expression. 
+            </summary>
+            <param name="parent">The parent expression instance.</param>
+            <param name="memberName">The name of the member to be accessed for the <paramref name="parent"/>.</param>
+            <param name="memberPaths">The names of all following-up members to be accessed.</param>
+            <returns>The generated <see cref="T:Microsoft.CodeAnalysis.CSharp.Syntax.ConditionalAccessExpressionSyntax"/> instance.</returns>
+        </member>
+        <member name="M:Sakura.AspNetCore.SignalR.HubProxyGenerators.SyntaxHelper.ArgumentList(Microsoft.CodeAnalysis.CSharp.Syntax.ExpressionSyntax[])">
+            <summary>
+            Generate the <see cref="T:Microsoft.CodeAnalysis.CSharp.Syntax.ArgumentListSyntax"/> instance from a list of argument expressions.
+            </summary>
+            <param name="expressions">The array of <see cref="T:Microsoft.CodeAnalysis.CSharp.Syntax.ExpressionSyntax"/> which represents to each argument.</param>
+            <returns>The generated <see cref="T:Microsoft.CodeAnalysis.CSharp.Syntax.ArgumentSyntax"/> instance.</returns>
+        </member>
+        <member name="M:Sakura.AspNetCore.SignalR.HubProxyGenerators.SyntaxHelper.MakeTaskType(Microsoft.CodeAnalysis.SemanticModel,Microsoft.CodeAnalysis.ITypeSymbol)">
+            <summary>
+            Generate a Task type with the specified task result value type.
+            </summary>
+            <param name="model">The <see cref="T:Microsoft.CodeAnalysis.SemanticModel"/> instance.</param>
+            <param name="innerType">The task result type, can be <c>null</c> if the task has no result.</param>
+            <returns>The generated <see cref="T:System.Threading.Tasks.Task"/> or <see cref="T:System.Threading.Tasks.Task`1"/> type.</returns>
+        </member>
+        <member name="M:Sakura.AspNetCore.SignalR.HubProxyGenerators.SyntaxHelper.MakeGenericType(Microsoft.CodeAnalysis.ITypeSymbol,Microsoft.CodeAnalysis.SemanticModel,System.Collections.Generic.IEnumerable{Microsoft.CodeAnalysis.ITypeSymbol})">
+            <summary>
+            Generate a <see cref="T:Microsoft.CodeAnalysis.CSharp.Syntax.GenericNameSyntax"/> used to present as a closed generic type.
+            </summary>
+            <param name="genericTypeDefinition">The type definition symbol of the generic type.</param>
+            <param name="model">The <see cref="T:Microsoft.CodeAnalysis.SemanticModel"/> instance.</param>
+            <param name="typeArguments">Type symbols for all type arguments.</param>
+            <returns>The generated <see cref="T:Microsoft.CodeAnalysis.CSharp.Syntax.GenericNameSyntax"/> instance.</returns>
+        </member>
+        <member name="M:Sakura.AspNetCore.SignalR.HubProxyGenerators.SyntaxHelper.TryGetTaskResultType(System.Type,System.Type@)">
+            <summary>
+            try to determine if a type represents as a task and get its result type.
+            </summary>
+            <param name="type">The <see cref="T:System.Type"/> to be determining.</param>
+            <param name="resultType">If the <paramref name="type"/> is a task with result, returns the result type; otherwise, returns <c>null</c>.</param>
+            <returns>If the <paramref name="type"/> is a task (with or without an result), returns <c>true</c>; otherwise, returns <c>false</c>.</returns>
+        </member>
+        <member name="T:Sakura.AspNetCore.SignalR.HubProxyGenerators.TaskEventClientCallbackGenerator">
+            <summary>
+            Generate client callback message handlers with task-based delegates.
+            </summary>
+        </member>
+        <member name="M:Sakura.AspNetCore.SignalR.HubProxyGenerators.TaskEventClientCallbackGenerator.GetDelegateTypeForMethod(Microsoft.CodeAnalysis.SemanticModel,System.Reflection.MethodInfo)">
+            <summary>
+            Get a delegate type which are compatible with the specified method.
+            </summary>
+            <param name="model"></param>
+            <param name="method">The method instance.</param>
+            <returns>The corresponding delegate type which are compatible with <paramref name="method"/>. the delegate type will always be a variant of either the System.Action or the System.Func series.</returns>
+        </member>
+    </members>
+</doc>
