@@ -11,7 +11,9 @@
 		<RepositoryType>git</RepositoryType>
 		<PackageTags>aspnetcore signalr sourcegenerator</PackageTags>
 		<PackageReleaseNotes>First release.</PackageReleaseNotes>
-		<Description>This package provide the common logic for using</Description>
+		<Description>This package provide the common logic used for SignalR hub generation.</Description>
+		<Authors>Iris Sakura</Authors>
+		<Product>Sakura.AspNetCore.SignalR.HubProxyGenerators</Product>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">

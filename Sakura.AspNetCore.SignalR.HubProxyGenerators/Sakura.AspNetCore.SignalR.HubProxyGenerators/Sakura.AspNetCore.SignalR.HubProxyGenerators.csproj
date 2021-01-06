@@ -32,6 +32,9 @@
 		<RepositoryType>git</RepositoryType>
 		<PackageTags>aspnetcore signalr sourcegenerator</PackageTags>
 		<PackageReleaseNotes>First release.</PackageReleaseNotes>
+		<Authors>Iris Sakura</Authors>
+		<Company>Iris Sakura</Company>
+		<Description>Generate strong typed proxy with client message callback support for SignalR hub services.</Description>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
