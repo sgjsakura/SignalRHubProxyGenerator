@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFramework>netstandard2.0</TargetFramework>
+		<LangVersion>9.0</LangVersion>
+		<Nullable>enable</Nullable>
+		<PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
+		<PackageProjectUrl>https://github.com/sgjsakura/SignalRHubProxyGenerator</PackageProjectUrl>
+		<RepositoryUrl>https://github.com/sgjsakura/SignalRHubProxyGenerator.git</RepositoryUrl>
+		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+		<RepositoryType>git</RepositoryType>
+		<PackageTags>aspnetcore signalr sourcegenerator</PackageTags>
+		<PackageReleaseNotes>First release.</PackageReleaseNotes>
+		<Description>This package provide the common logic for using</Description>
+	</PropertyGroup>
+
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+	  <DocumentationFile>Sakura.AspNetCore.SignalR.HubProxies.xml</DocumentationFile>
+	</PropertyGroup>
+
+	<ItemGroup>
+	  <PackageReference Include="Microsoft.AspNetCore.SignalR.Client.Core" Version="5.0.0" />
+	  <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" Version="5.0.0" />
+	</ItemGroup>
+
+</Project>
