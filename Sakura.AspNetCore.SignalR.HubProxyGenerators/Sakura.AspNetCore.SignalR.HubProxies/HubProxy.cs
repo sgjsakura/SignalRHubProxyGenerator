@@ -21,6 +21,9 @@ namespace Sakura.AspNetCore.SignalR.HubProxies
 		/// </summary>
 		public HubConnection HubConnection { get; set; } = null!;
 
+		/// <summary>
+		/// The collection of all <see cref="IDisposable"/> created by the <see cref="HubConnection.On"/> method calls.
+		/// </summary>
 		protected ICollection<IDisposable> ClientCallbackHandlers { get; } = new Collection<IDisposable>();
 
 		/// <summary>

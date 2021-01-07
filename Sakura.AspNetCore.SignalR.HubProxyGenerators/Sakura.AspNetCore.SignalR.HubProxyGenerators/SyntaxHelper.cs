@@ -20,9 +20,31 @@ namespace Sakura.AspNetCore.SignalR.HubProxyGenerators
 	public static class SyntaxHelper
 	{
 
+		/// <summary>
+		/// Get all data of a specified attribute type from a symbol definition.
+		/// </summary>
+		/// <typeparam name="T">The type of the attribute.</typeparam>
+		/// <param name="symbol">The symbol object.</param>
+		/// <returns>All the <see cref="AttributeData"/> instance with type <typeparamref name="T"/> defined on the <paramref name="symbol"/>. If no matching attribute is found, this method will returns a empty collection.</returns>
+		public static IEnumerable<AttributeData> GetAttributes<T>(this ISymbol symbol)
+			where T : Attribute
+			=> symbol.GetAttributes().Where(i =>
+				i.AttributeClass != null && SymbolDisplay.ToDisplayString(i.AttributeClass) == typeof(T).FullName);
+
+		/// <summary>
+		/// Get all data of a specified attribute type from a symbol definition.
+		/// </summary>
+		/// <typeparam name="T">The type of the attribute.</typeparam>
+		/// <param name="symbol">The symbol object.</param>
+		/// <returns>The <see cref="AttributeData"/> instance with type <typeparamref name="T"/> defined on the <paramref name="symbol"/>. If no matching attribute is found, this method will returns <c>null</c>; If more than one instance is defined, <see cref="InvalidOperationException"/> will be raised.</returns>
+		/// <exception cref="InvalidOperationException">There is more than one attribute with the same type defined on the <paramref name="symbol"/>.</exception>
+		public static AttributeData? GetAttribute<T>(this ISymbol symbol)
+			where T : Attribute
+			=> symbol.GetAttributes<T>().SingleOrDefault();
+
 		public static T GetValue<T>(this AttributeData attributeData, string key)
 		{
-			var item = attributeData.NamedArguments.FirstOrDefault(i => i.Key == key);
+			var item = attributeData.NamedArguments.SingleOrDefault(i => i.Key == key);
 
 			// Not found
 			if (item.Key == null)

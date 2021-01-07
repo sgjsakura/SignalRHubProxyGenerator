@@ -1,4 +1,11 @@
 ﻿using System;
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
+
+using Sakura.AspNetCore.SignalR.HubProxies;
+
+[assembly: NetCoreRuntimeLocation("test", IgnoredFiles = new[] { "abc", "def" })]
+
 
 namespace Sakura.AspNetCore.SignalR.HubProxies
 {
@@ -16,7 +23,8 @@ namespace Sakura.AspNetCore.SignalR.HubProxies
 		/// <summary>
 		/// If true, the generated hub proxy class will not contain any hub client message events.
 		/// </summary>
-		public HubClientCallbackGenerateMode ClientCallbackGenerationMode { get; set; }
+		public HubClientCallbackGenerateMode ClientCallbackGenerationMode { get; set; } =
+			HubClientCallbackGenerateMode.AsyncEvent;
 
 		/// <summary>
 		/// The client type of the hub. If this property is not <c>null</c>, it will be used rather than the inferred hub client type.
@@ -38,7 +46,7 @@ namespace Sakura.AspNetCore.SignalR.HubProxies
 		/// </item>
 		/// </list>
 		/// </summary>
-		public string TypeNameFormat { get; set; } = DefaultTypeNameFormat;
+		public string? TypeNameFormat { get; set; } = DefaultTypeNameFormat;
 
 		/// <summary>
 		/// The default value of <see cref="TypeNameFormat"/>. This field is constant.

@@ -11,6 +11,7 @@ using System.Threading;
 
 using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 using Sakura.AspNetCore.SignalR.HubProxies;
@@ -24,12 +25,8 @@ namespace Sakura.AspNetCore.SignalR.HubProxyGenerators
 	/// Provide ability to generate proxy service class for SignalR Hub.
 	/// </summary>
 	[Generator]
-	public class SignalRHubProxyGenerator : ISourceGenerator, IDisposable
+	public class SignalRHubProxyGenerator : ISourceGenerator
 	{
-		/// <summary>
-		/// The <see cref="MetadataLoadContext"/> service instance used to load assemblies.
-		/// </summary>
-		private MetadataLoadContext LoadContext { get; set; } = null!;
 
 		/// <summary>
 		/// The full name of the hub type. This field is constant.
@@ -39,54 +36,96 @@ namespace Sakura.AspNetCore.SignalR.HubProxyGenerators
 		/// <summary>
 		/// The full name of the hub type with a strong typed client. This field is constant.
 		/// </summary>
-
 		private const string StrongClientHubTypeFullName = "Microsoft.AspNetCore.SignalR.Hub`1";
 
+
 		/// <summary>
-		/// Load a DLL file into the load context.
+		/// Generate the <see cref="MetadataLoadContext"/> using specified runtime location information.
 		/// </summary>
-		/// <param name="dllPath">The file path for the library.</param>
-		/// <returns>The loaded <see cref="Assembly"/> object.</returns>
-		private Assembly LoadDll(string dllPath)
+		/// <param name="runtimeLocationAttribute">The attribute data for the <see cref="NetCoreRuntimeLocationAttribute"/> instance defined on an assembly, or <c>null</c> if no such instance is defined.</param>
+		/// <returns>The <see cref="MetadataLoadContext"/> service instance.</returns>
+		private MetadataLoadContext CreateLoadContext(AttributeData? runtimeLocationAttribute)
 		{
-			var asm = LoadContext.LoadFromAssemblyPath(dllPath);
-			return asm;
+			var runtimeLibraryPaths =
+				runtimeLocationAttribute != null
+					? GetLibraryFilesFromAttribute(runtimeLocationAttribute)
+					: Enumerable.Empty<string>();
+
+			var resolver = new PathAssemblyResolver(runtimeLibraryPaths);
+			return new MetadataLoadContext(resolver);
+		}
+
+		/// <summary>
+		/// Extract all valid runtime library file paths from an instance of <see cref="NetCoreRuntimeLocationAttribute"/> defined in an assembly.
+		/// </summary>
+		/// <param name="runtimeLocationAttribute">The <see cref="AttributeData"/> represents of a defined instance of <see cref="NetCoreRuntimeLocationAttribute"/>.</param>
+		/// <returns>All paths for valid runtime library files. If no file matches, an empty collection will be returned.</returns>
+		private static IEnumerable<string> GetLibraryFilesFromAttribute(AttributeData runtimeLocationAttribute)
+		{
+			var directories =
+				(from i in runtimeLocationAttribute.ConstructorArguments // each argument
+				 from j in i.Values // item in each argument
+				 select (string?)j.Value)
+				.ToArray();
+
+			if (directories.Length == 0)
+			{
+				throw new ArgumentException(
+					$"You must specified at least one library directory for the {nameof(NetCoreRuntimeLocationAttribute)} attribute instance.");
+			}
+
+			var excludedFileNames =
+				runtimeLocationAttribute.GetValue<string[]?>(nameof(NetCoreRuntimeLocationAttribute.IgnoredFiles))
+				?? new[] { NetCoreRuntimeLocationAttribute.CoreLibraryName };
+
+			var searchPattern =
+				runtimeLocationAttribute.GetValue<string?>(nameof(NetCoreRuntimeLocationAttribute.SearchPattern))
+				?? NetCoreRuntimeLocationAttribute.DefaultSearchPattern;
+
+			return
+				from dir in directories
+				let realDir = Environment.ExpandEnvironmentVariables(dir)
+				from path in Directory.EnumerateFiles(realDir, searchPattern, SearchOption.AllDirectories)
+				where !excludedFileNames.Contains(Path.GetFileNameWithoutExtension(path))
+				select path;
+		}
+
+		/// <inheritdoc />
+		public void Initialize(GeneratorInitializationContext context)
+		{
 		}
 
 		/// <inheritdoc />
 		public void Execute(GeneratorExecutionContext context)
 		{
 			AttachDebugger();
-			var assemblyParsed = false;
 
-			foreach (var syntaxTree in context.Compilation.SyntaxTrees)
+			// create load context
+			var runtimeLoadAttribute = context.Compilation.Assembly.GetAttribute<NetCoreRuntimeLocationAttribute>();
+			using var loadContext = CreateLoadContext(runtimeLoadAttribute);
+
+			// All HubProxyGenerationAttribute instance
+			var generationAttributes = context.Compilation.Assembly.GetAttributes<HubProxyGenerationAttribute>();
+
+			foreach (var attr in generationAttributes)
 			{
-				if (assemblyParsed)
-				{
-					continue;
-				}
-
-				assemblyParsed = true;
-
-				var model = context.Compilation.GetSemanticModel(syntaxTree);
-
-				var generationAttributeData = model.Compilation.Assembly
-					.GetAttributes()
-					.FirstOrDefault(i => i.AttributeClass?.Name == nameof(HubProxyGenerationAttribute));
-
-				// No generation specified
-				if (generationAttributeData == null)
-				{
-					return;
-				}
-
 
 				var dllPath =
-					generationAttributeData.GetValue<string>(nameof(HubProxyGenerationAttribute.HubAssemblyPath));
+					attr.GetValue<string>(nameof(HubProxyGenerationAttribute.HubAssemblyPath));
 
-				var asm = LoadDll(dllPath);
+				var asm = loadContext.LoadFromAssemblyPath(dllPath);
 
-				var namespaceDecl = GenerateNamespace(generationAttributeData.GetValue<string>(nameof(HubProxyGenerationAttribute.RootNamespace)));
+				// Create unit as new code root
+				var compilationUnit = CompilationUnit();
+
+				// Add to compilation, not the returned value is used for get semantic model only.
+				var compilation = context.Compilation.AddSyntaxTrees(compilationUnit.SyntaxTree);
+
+				// create semantic model
+				var model = compilation.GetSemanticModel(compilationUnit.SyntaxTree);
+
+				// Root namespace
+				var namespaceDecl = GenerateNamespace(attr.GetValue<string>(nameof(HubProxyGenerationAttribute.RootNamespace)));
 
 				foreach (var type in asm.DefinedTypes)
 				{
@@ -99,19 +138,25 @@ namespace Sakura.AspNetCore.SignalR.HubProxyGenerators
 					}
 
 					var clientTypeName = string.Format(CultureInfo.InvariantCulture,
-						generationAttributeData.GetValue<string>(nameof(HubProxyGenerationAttribute
+						attr.GetValue<string?>(nameof(HubProxyGenerationAttribute
 							.TypeNameFormat)) ?? HubProxyGenerationAttribute.DefaultTypeNameFormat, type.Name);
 					// Add class
 					var classDecl = GenerateProxyForHubType(model, clientTypeName, type, hubType);
 					namespaceDecl = namespaceDecl.AddMembers(classDecl);
 				}
 
+				// Add namespace to unit
+				compilationUnit = compilationUnit.AddMembers(namespaceDecl);
 
-				var code = namespaceDecl.NormalizeWhitespace().ToFullString();
+				// generate code
+				var code = compilationUnit.NormalizeWhitespace().ToFullString();
+				context.AddSource(Path.GetFileNameWithoutExtension(dllPath), code);
+
+				// Debug output
 				Debug.WriteLine(code);
-				context.AddSource("HubProxy.cs", code);
 			}
 		}
+
 
 		/// <summary>
 		/// Generate hub client message handlers.
@@ -341,29 +386,8 @@ namespace Sakura.AspNetCore.SignalR.HubProxyGenerators
 					// await InvokeCore ...
 					return invokeCall.Await().AsStatement().AsBlock();
 				}
-				
+
 			}
-		}
-
-
-		/// <inheritdoc />
-		public void Initialize(GeneratorInitializationContext context)
-		{
-
-			var libs = new List<string>();
-
-			var runtimeLibs = Directory.GetFiles(RuntimeEnvironment.GetRuntimeDirectory(), "*.dll");
-			var coreLibs =
-				Directory.GetFiles(
-					Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "dotnet", "packs"),
-					"*.dll", SearchOption.AllDirectories);
-
-			libs.AddRange(runtimeLibs);
-			libs.AddRange(coreLibs.Where(i => Path.GetFileName(i) != "mscorlib.dll"));
-
-			var resolver = new PathAssemblyResolver(libs.ToArray());
-
-			LoadContext = new MetadataLoadContext(resolver);
 		}
 
 		/// <summary>
@@ -374,14 +398,8 @@ namespace Sakura.AspNetCore.SignalR.HubProxyGenerators
 		{
 			if (!Debugger.IsAttached)
 			{
-				//Debugger.Launch();
+				Debugger.Launch();
 			}
-		}
-
-		/// <inheritdoc />
-		public void Dispose()
-		{
-			LoadContext?.Dispose();
 		}
 	}
 }
