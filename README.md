@@ -29,7 +29,7 @@ To generate SignalR strong-typed client hub proxies, you should take the followi
 
 - Add a `HubProxyGeneration` attribute to locate the library which contains the hub server type and control various generating settings, an example may be:
 ```C#
-[assembly: HubProxyGeneration(HubAssemblyPath = "full\path\to\my\web\server\assembly.dll", RootNamespace = "Your.Preferred.Namespace.For.Clients")]
+[assembly: HubProxyGeneration(HubAssemblyPath = "full\path\to\your\web\server\assembly.dll", RootNamespace = "Your.Preferred.Namespace.For.Clients")]
 ```
 
 Now you may build you project and Visual Studio will automatically call the source generator to generate hub client types.
@@ -61,7 +61,9 @@ public class ChatHubProxy
 
 To use the strong-typed hub client, first call `CreateProxy` extension method on an existing `HubConnection` instance as following:
 ```C#
-var charProxy = new HubConnectionBuilder.WithUrl("http://server.name/hub-name").Build()
+var charProxy = new HubConnectionBuilder()
+  .WithUrl("http://server.name/hub-name")
+  .Build()
   .CreateProxy<ChartHubProxy>(); // new extension method used to create hub proxies.
 ```
 
@@ -77,3 +79,27 @@ To handle incoming message from server, use the event defined in the proxy just 
 chatProxy.MessageReceived += async (user, message) => { Console.WriteLine("{0} says: {1}", user, message) };
 ```
 *Note: You may add and remove mesasge handlers at any time (while original `HubConnection` class requires you subscribe messages before it starts).*
+
+## Impelementation and Limitations
+
+### Type Equivalents
+
+Since your server and client may target on different frameworks, and there are also a dazen of versions for (ASP).NET Core runtime, strict exraction for ASP.NET Core and user defined assemblies or types is neither possible nor appropriate. Instead, the generator uses `FullName` based comparasion for type checking. Under such circumstance, if your assembly contains types with the same full name (type name together with namespaces) as ASP.NET Core hub related types (i.e. you define a type with the full name of `Microsoft.AspNetCore.SignalR.Hub` in your code), or types in any reference assemblies, the process of code detecting and geneartion may be incorrect; in the worst case, your project may be unable to compile. 
+
+Although types with same full name are rare, you may have to change the type name if you actually meet this breaking issue.
+
+### Method and Client Event Generation
+
+#### Server Method Generation
+
+Any type which has the type `Microsoft.AspNetCore.SignalR.Hub` in its base type chain will be considered as a hub type, excepts for abstract of open generic types.
+
+This generator will generate proxy methods for all methods defined on the server hub type (also includes derived methods, if your hub has any a complex heritance chain), while method coming from the base `Hub` type or lower positions will be ignored.
+
+A hub method must be public and non-static, also it have a return type of `Task` or `Task<T>`, otherwise the method will not be considerd as a hub method and will be ignored during the proxy generation. 
+
+#### Client Event Generation
+
+If you hub type derives from `Microsoft.AspNetCore.SignalR.Hub<T>`, thus the generic argument type will be considered as the client contact type, or you may use `HubClientType` in `HubProxyGeneration` attribute to explicitly specify the client type. If the client type is not specified nor be detectable, no client event will be generated.
+
+A hub client method must be public and non-static, and it must returns the non-generic `Task` type (generic versions is not supported by the SignalR runtime). A event with type of `System.Func` will be generated for each method. Although defining events with non-void type conflicts with .NET degisn guideline, it is actually used on events like `Connceted` which are from the SignalR client runtime so this generator kept this design pattern for client eventse.
