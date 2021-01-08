@@ -24,7 +24,7 @@ To generate SignalR strong-typed client hub proxies, you should take the followi
 
 - Add a `NetCoreRuntimeLocation` attribute to specify the install location of ASP.NET Core shared framework libraries, this is important since the generation engine must load them to detect SignalR Hub related type information. Usually they will be located at `C:\Program Files\dotnet\packs`, thus you may set the attribute like:
 ```C#
-[assembly: NetCoreEnviromentLocation(@"C:\Program Files\dotnet\packs")]
+[assembly: NetCoreRuntimeLocation(@"C:\Program Files\dotnet\packs")]
 ```
 
 - Add a `HubProxyGeneration` attribute to locate the library which contains the hub server type and control various generating settings, an example may be:
