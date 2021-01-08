@@ -75,7 +75,7 @@ var result = await chatProxy.SendMessage("Alice", "Hello.");
 ```
 
 To handle incoming message from server, use the event defined in the proxy just like:
-```
+```C#
 chatProxy.MessageReceived += async (user, message) => { Console.WriteLine("{0} says: {1}", user, message) };
 ```
 *Note: You may add and remove mesasge handlers at any time (while original `HubConnection` class requires you subscribe messages before it starts).*
