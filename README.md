@@ -82,7 +82,7 @@ chatProxy.MessageReceived += async (user, message) => { Console.WriteLine("{0} s
 
 ## Impelementation and Limitations
 
-### Type Equivalents
+### Core Type Equivalents
 
 Since your server and client may target on different frameworks, and there are also a dazen of versions for (ASP).NET Core runtime, strict exraction for ASP.NET Core and user defined assemblies or types is neither possible nor appropriate. Instead, the generator uses `FullName` based comparasion for type checking. Under such circumstance, if your assembly contains types with the same full name (type name together with namespaces) as ASP.NET Core hub related types (i.e. you define a type with the full name of `Microsoft.AspNetCore.SignalR.Hub` in your code), or types in any reference assemblies, the process of code detecting and geneartion may be incorrect; in the worst case, your project may be unable to compile. 
 
@@ -102,4 +102,56 @@ A hub method must be public and non-static, also it have a return type of `Task`
 
 If you hub type derives from `Microsoft.AspNetCore.SignalR.Hub<T>`, thus the generic argument type will be considered as the client contact type, or you may use `HubClientType` in `HubProxyGeneration` attribute to explicitly specify the client type. If the client type is not specified nor be detectable, no client event will be generated.
 
-A hub client method must be public and non-static, and it must returns the non-generic `Task` type (generic versions is not supported by the SignalR runtime). A event with type of `System.Func` will be generated for each method. Although defining events with non-void type conflicts with .NET degisn guideline, it is actually used on events like `Connceted` which are from the SignalR client runtime so this generator kept this design pattern for client eventse.
+A hub client method must be public and non-static, and it must returns the non-generic `Task` type (generic versions is not supported by the SignalR runtime). A event with type of `System.Func` will be generated for each method. Although defining events with non-void type conflicts with .NET degisn guideline, it is actually used on events like `Connceted` which are from the SignalR client runtime so we kept this design pattern for client events.
+
+**Note: Currently if your client have methods with too many parameters (larger than 8 or 16, depending on your core version) which causes no matching delegate type in the `System.Func` series can be found, the generation will crash. You may consider merge some parameters into one complex type in order to reduce the parameter count. In future versions we will fix this problem to support long-parameter methods.**
+
+### Intermediate Data Type Supporting
+
+Clients and server transmit data with arguments, thus there must be equivalent types between them. The generator automatically map types with the same full name from the server to the client, and thus all core CLR types (e.g. `System.String`, `System.Int32`, etc.) can be correctly used unless you intentionally define confusing types. 
+
+For user defined complex server data types, there must also be a type with the same full name defined in the client project. We recommends you define a inntermediate assembly which contains all types should be transmitted between server and clients and reference it in both sides to reduce the complexity for type sharing.
+
+**Automatically generating client data types according to server types is not supported in the current version but will be support in the future.**
+
+### Generation Process Controlling
+
+In the current verssion, you may have little control for the generation process. New attributes and options for code generation will be added continously in future versions.
+
+## Future Features List
+
+this project is planned to support the following features in the future:
+
+### Core Logic
+
+- [ ] More reliable assembly and type detection
+- [ ] Automatical .NET Core library importing
+
+### Hub Generation
+
+- [ ] Support for long parameterized methods
+- [ ] Mapped client type generation for server data types
+- [ ] Individually enable/disable code generation for types/methods
+- [ ] Server side code generation attributes
+
+### Customization
+
+- [ ] Flexible generated type/member naming rules
+- [ ] More client message patterns (using delegates or partial methods, etc.)
+
+### Robustness
+
+- [ ] Automatical renaming for duplicated items
+- [ ] Better handling for unsupported/invalid hub members
+
+### Documentation
+
+- [ ] Automatically add documentation for generated members
+
+### Localization
+
+- [ ] Localization for hub generation messages
+
+## Contribution and Issues
+
+If you have any problem or suggestion, please feel free to open new issue. 
