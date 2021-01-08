@@ -154,7 +154,7 @@ this project is planned to support the following features in the future:
 
 ## Troubleshooting
 
-**Generation aborted and a warning message occured during the building **
+**Generation aborted and a warning message occured during the building**
 
 It means exception raised during the generation process. You may read the message and try to fix it by adjust generation and project settings. You are welcome to submit an issue to report any generation errors.
 
