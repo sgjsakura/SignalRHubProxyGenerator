@@ -39,7 +39,7 @@ Now you may build you project and Visual Studio will automatically call the sour
 After the hub client is generated, you may take benefit in SignalR hub related codes. Assuming you have a hub defined in server as the following:
 
 ```C#
-public classd ChatHub : Hub<IMyHubClient>
+public class ChatHub : Hub<IMyHubClient>
 {
   public Task<bool> SendMessage(string user, string content) { /* ... */ } 
 }
@@ -154,14 +154,4 @@ this project is planned to support the following features in the future:
 
 ## Troubleshooting
 
-**Generation aborted and a warning message occured during the building**
-
-It means exception raised during the generation process. You may read the message and try to fix it by adjust generation and project settings. You are welcome to submit an issue to report any generation errors.
-
-**The building process finished successfully but nothing happens, no proxy type can be used in my project**
-
-Since the source generator is a new feature just introduced in the lastest version of Visual Studio, there is still quite stable for use. Sometimes the generated code cannot be detected by the editor and thus you cannot found or use them. You may restart Visual Studio after your project builded and you may found the new generated proxy types. If you have tried many time but you still fail, you may submit issues here or report to the [.NET Roslyn developement team](https://github.com/dotnet/roslyn). 
-
-## Contribution and Issues
-
-If you have any problem or suggestion, please feel free to open new issue. 
+**Generation aborted and a w
