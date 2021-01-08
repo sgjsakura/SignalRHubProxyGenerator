@@ -2,7 +2,7 @@
 
 ## Background
 
-ASP.NET Core SignalR is an excellent successor for original ASP.NET SignalR framework, it provides fast, low latency and reliable duplex communication between web server and various clients, including Windows desktop, Web page, etc.
+(https://dotnet.microsoft.com/apps/aspnet/signalr)[ASP.NET Core SignalR] is an excellent successor for original ASP.NET SignalR framework, it provides fast, low latency and reliable duplex communication between web server and various clients, including Windows desktop, Web page, etc.
 
 SignalR uses framework-independent serliazation to provide data tarnsfer compatbility for different client development environments, which introduce a major side effect that developers must implements all intermediate types and action calls manually. The original ASP.NET SignalR can generate a Javascript proxy script file in order to simplify the Javascript client development, while in the new .NET Core version, this feature is removed; also, it provides little help for other clients rather than Javascript ones (e.g. for clients using C#).
 
@@ -16,9 +16,9 @@ This project tries to take the advantage from the newly introduced C# source gen
 
 To generate SignalR strong-typed client hub proxies, you should take the following steps:
 
-1. Add a package reference of `Sakura.AspNetCore.SignalR.HubProxies`, which provide necessary common logics for hub proxies and generation controlling attributes.
+1. Add a package reference of (https://www.nuget.org/packages/Sakura.AspNetCore.SignalR.HubProxies/)[`Sakura.AspNetCore.SignalR.HubProxies`], which provide necessary common logics for hub proxies and generation controlling attributes.
 
-2. Add a package reference of `Sakura.AspNetCore.SignalR.HubProxyGenerators`, this is a source generator package and thus it will be listed in the `Analyzers` nodes in your project after you installed it.
+2. Add a package reference of (https://www.nuget.org/packages/Sakura.AspNetCore.SignalR.HubProxyGenerators)[`Sakura.AspNetCore.SignalR.HubProxyGenerators`], this is a source generator package and thus it will be listed in the `Analyzers` nodes in your project after you installed it.
 
 3. Provide necessary information for hub proxy generation, you should at least take 2 steps in order to make the generation process work:
 
@@ -160,7 +160,7 @@ It means exception raised during the generation process. You may read the messag
 
 **The building process finished successfully but nothing happens, no proxy type can be used in my project**
 
-Since the source generator is a new feature just introduced in the lastest version of Visual Studio, there is still quite stable for use. Sometimes the generated code cannot be detected by the editor and thus you cannot found or use them. You may restart Visual Studio after your project builded and you may found the new generated proxy types. If you have tried many time but you still fail, you may submit issues here or report to the .NET Roslyn developement team. 
+Since the source generator is a new feature just introduced in the lastest version of Visual Studio, there is still quite stable for use. Sometimes the generated code cannot be detected by the editor and thus you cannot found or use them. You may restart Visual Studio after your project builded and you may found the new generated proxy types. If you have tried many time but you still fail, you may submit issues here or report to the (https://github.com/dotnet/roslyn)[.NET Roslyn developement team]. 
 
 ## Contribution and Issues
 
