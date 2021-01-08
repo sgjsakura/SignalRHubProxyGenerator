@@ -2,13 +2,13 @@
 
 ## Background
 
-ASP.NET Core SignalR is a excellent successor for original ASP.NET SignalR framework, it provides fast, low latency and reliable duplex communication between web server and various clients (including Windows desktop, Web page, etc.).
+ASP.NET Core SignalR is an excellent successor for original ASP.NET SignalR framework, it provides fast, low latency and reliable duplex communication between web server and various clients, including Windows desktop, Web page, etc.
 
-SignalR uses framework-independent serliazation to provide data tarnsfer compabitlity between different client development environments, which introduce a major side effect that developers must implements all intermediate types and action calls manually. The original ASP.NET SignalR can generate a Javascript proxy script file in order to simplify the client development with strong-typed method calls and data type definitions. However in the new .NET Core version, this feature is removed; also, it provides little help for other clients rather than Javascript ones (e.g. clients using C#).
+SignalR uses framework-independent serliazation to provide data tarnsfer compatbility for different client development environments, which introduce a major side effect that developers must implements all intermediate types and action calls manually. The original ASP.NET SignalR can generate a Javascript proxy script file in order to simplify the Javascript client development, while in the new .NET Core version, this feature is removed; also, it provides little help for other clients rather than Javascript ones (e.g. for clients using C#).
 
-You may using shared libraries to share data types beteween client and server project in order to simplify data type definition work, while sometimes the source code of the server is not under your control and thus you cannot share codes. And what's more, the interface and action calls definition is ever not sharable since they are business types with heavy logic code written.
+You may use shared libraries to share data types beteween client and server projects in order to simplify data type definition work, however, sometimes the source code of the server is not under your control and thus you cannot share codes. And what's more, the interface and action calls is never sharable, since they are business types with heavy logic code inside.
 
-This project tries to take the advantage from the newly introducec C# source generators features to simplify the SignalR hub client design process for .NET Standard project using C# 7.3 or later. The source generator will parse the hub type information on the server and then generate easy-to-use proxy types for them. Drop the borning code copying off and just enjoy focusing on your core business! 
+This project tries to take the advantage from the newly introduced C# source generator feature, in order to simplify the SignalR hub client design process for .NET Standard project using C# 7.3 or later. It will parse the hub type information at server and generate easy-to-use proxy types for them at your client. Drop the borning code copying off and just enjoy focusing on your core business! 
 
 ## How to Use
 
@@ -18,11 +18,11 @@ To generate SignalR strong-typed client hub proxies, you should take the followi
 
 1. Add a package reference of `Sakura.AspNetCore.SignalR.HubProxies`, which provide necessary common logics for hub proxies and generation controlling attributes.
 
-2. Add a package reference of `Sakura.AspNetCore.SignalR.HubProxyGenerators`, this is a source generator package and thus after use installed it, it will be listed in the `Analyzers` nodes in your project.
+2. Add a package reference of `Sakura.AspNetCore.SignalR.HubProxyGenerators`, this is a source generator package and thus it will be listed in the `Analyzers` nodes in your project after you installed it.
 
-3. Provide necessary information for hub proxy generations, you should at least take 2 steps in order to make generating process works:
+3. Provide necessary information for hub proxy generation, you should at least take 2 steps in order to make the generation process work:
 
-- Add a `NetCoreRuntimeLocation` attribute to specify the install location of ASP.NET Core shared framework libraries, this is important since the generation engine must load them to detect SignalR Hub related type information. Usually they will be located at `C:\Program Files\dotnet\packs`, thus you may set the attribute like:
+- Add a `NetCoreRuntimeLocation` attribute to specify the install location of ASP.NET Core shared framework libraries, this is important because the generation engine must load them to detect SignalR Hub related type information. Usually they will be located at `C:\Program Files\dotnet\packs`, thus you may set the attribute like:
 ```C#
 [assembly: NetCoreRuntimeLocation(@"C:\Program Files\dotnet\packs")]
 ```
@@ -94,29 +94,29 @@ Although types with same full name are rare, you may have to change the type nam
 
 Any type which has the type `Microsoft.AspNetCore.SignalR.Hub` in its base type chain will be considered as a hub type, excepts for abstract of open generic types.
 
-This generator will generate proxy methods for all methods defined on the server hub type (also includes derived methods, if your hub has any a complex heritance chain), while method coming from the base `Hub` type or lower positions will be ignored.
+This generator will generate proxy methods for all methods defined on the server hub type (also includes derived ones if your hub has a complex inheritance chain), while methods coming from the base `Hub` type or lower inheritance positions will be ignored.
 
 A hub method must be public and non-static, also it have a return type of `Task` or `Task<T>`, otherwise the method will not be considerd as a hub method and will be ignored during the proxy generation. 
 
 #### Client Event Generation
 
-If you hub type derives from `Microsoft.AspNetCore.SignalR.Hub<T>`, thus the generic argument type will be considered as the client contact type, or you may use `HubClientType` in `HubProxyGeneration` attribute to explicitly specify the client type. If the client type is not specified nor be detectable, no client event will be generated.
+If your hub type derives from `Microsoft.AspNetCore.SignalR.Hub<T>`, the generic argument type will be considered as the client contract type, or you may use `HubClientType` property in the `HubProxyGeneration` attribute instance to explicitly specify the client type. If the client type is not specified nor be detectable, no client event will be generated.
 
-A hub client method must be public and non-static, and it must returns the non-generic `Task` type (generic versions is not supported by the SignalR runtime). A event with type of `System.Func` will be generated for each method. Although defining events with non-void type conflicts with .NET degisn guideline, it is actually used on events like `Connceted` which are from the SignalR client runtime so we kept this design pattern for client events.
+A hub client method must be public and non-static, and it must returns the non-generic `Task` type (generic versions is not supported by the SignalR runtime). An event with type from `System.Func` series will be generated for each method. Although defining events with non-void type conflicts with .NET degisn guideline, it is actually used on events like `Connected` which are from the SignalR client runtime so we kept this design pattern for client events.
 
-**Note: Currently if your client have methods with too many parameters (larger than 8 or 16, depending on your core version) which causes no matching delegate type in the `System.Func` series can be found, the generation will crash. You may consider merge some parameters into one complex type in order to reduce the parameter count. In future versions we will fix this problem to support long-parameter methods.**
+**Note: Currently if your client have a method with too many parameters (larger than 8 or 16, depending on your core version) which causes no matching delegate type in the `System.Func` series can be found, the generation will crash. You may consider to merge some parameters as one complex type in order to reduce the parameter count. In future versions we will fix this problem to support long-parameterized methods.**
 
 ### Intermediate Data Type Supporting
 
-Clients and server transmit data with arguments, thus there must be equivalent types between them. The generator automatically map types with the same full name from the server to the client, and thus all core CLR types (e.g. `System.String`, `System.Int32`, etc.) can be correctly used unless you intentionally define confusing types. 
+Clients and server transmit data with arguments, thus there must be equivalent types between them. The generator automatically map types with the same full name from the server to the client, and thus all core CLR types (e.g. `System.String`, `System.Int32`, etc.) can be correctly selected unless you intentionally define confusing types. 
 
-For user defined complex server data types, there must also be a type with the same full name defined in the client project. We recommends you define a inntermediate assembly which contains all types should be transmitted between server and clients and reference it in both sides to reduce the complexity for type sharing.
+For user defined complex server data types, there must also be a type with the same full name defined in the client project. We suggest you define an intermediate assembly which contains all types should be transmitted between server and clients and reference it in both sides to reduce the complexity of type sharing.
 
-**Automatically generating client data types according to server types is not supported in the current version but will be support in the future.**
+**Automatically generates client data types according to server types is not supported in the current version but will be support in the future.**
 
 ### Generation Process Controlling
 
-In the current verssion, you may have little control for the generation process. New attributes and options for code generation will be added continously in future versions.
+In the current version, you may have little control for the generation process. New attributes and options for code generation will be added continuously in future versions.
 
 ## Future Features List
 
