@@ -1,17 +1,11 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.30626.31
+# Visual Studio Version 17
+VisualStudioVersion = 17.5.33516.290
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sakura.AspNetCore.SignalR.HubProxyGenerators", "Sakura.AspNetCore.SignalR.HubProxyGenerators\Sakura.AspNetCore.SignalR.HubProxyGenerators.csproj", "{82EA11EE-6B47-41E3-97D8-5B24827BC6A2}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sakura.AspNetCore.SignalR.HubProxies", "Sakura.AspNetCore.SignalR.HubProxies\Sakura.AspNetCore.SignalR.HubProxies.csproj", "{37FE67A6-D14F-4E3C-815D-A9FFBABB568E}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{0907656E-1CB7-4238-8279-251558C400FE}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TestClient", "Tests\TestClient\TestClient.csproj", "{18F5B14B-CB91-40C1-A0C1-AEFC14ED2E45}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TestServer", "Tests\TestServer\TestServer.csproj", "{A00231FB-2975-4E7E-B5EC-AF5CCDFB26CA}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sakura.AspNetCore.SignalR.HubProxyGenerators", "Sakura.AspNetCore.SignalR.HubProxyGenerators\Sakura.AspNetCore.SignalR.HubProxyGenerators.csproj", "{75386ABA-A25D-4107-B753-B3F43BB41B87}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -19,29 +13,17 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{82EA11EE-6B47-41E3-97D8-5B24827BC6A2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{82EA11EE-6B47-41E3-97D8-5B24827BC6A2}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{82EA11EE-6B47-41E3-97D8-5B24827BC6A2}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{82EA11EE-6B47-41E3-97D8-5B24827BC6A2}.Release|Any CPU.Build.0 = Release|Any CPU
 		{37FE67A6-D14F-4E3C-815D-A9FFBABB568E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{37FE67A6-D14F-4E3C-815D-A9FFBABB568E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{37FE67A6-D14F-4E3C-815D-A9FFBABB568E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{37FE67A6-D14F-4E3C-815D-A9FFBABB568E}.Release|Any CPU.Build.0 = Release|Any CPU
-		{18F5B14B-CB91-40C1-A0C1-AEFC14ED2E45}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{18F5B14B-CB91-40C1-A0C1-AEFC14ED2E45}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{18F5B14B-CB91-40C1-A0C1-AEFC14ED2E45}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{18F5B14B-CB91-40C1-A0C1-AEFC14ED2E45}.Release|Any CPU.Build.0 = Release|Any CPU
-		{A00231FB-2975-4E7E-B5EC-AF5CCDFB26CA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{A00231FB-2975-4E7E-B5EC-AF5CCDFB26CA}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{A00231FB-2975-4E7E-B5EC-AF5CCDFB26CA}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{A00231FB-2975-4E7E-B5EC-AF5CCDFB26CA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{75386ABA-A25D-4107-B753-B3F43BB41B87}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{75386ABA-A25D-4107-B753-B3F43BB41B87}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{75386ABA-A25D-4107-B753-B3F43BB41B87}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{75386ABA-A25D-4107-B753-B3F43BB41B87}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
-	EndGlobalSection
-	GlobalSection(NestedProjects) = preSolution
-		{18F5B14B-CB91-40C1-A0C1-AEFC14ED2E45} = {0907656E-1CB7-4238-8279-251558C400FE}
-		{A00231FB-2975-4E7E-B5EC-AF5CCDFB26CA} = {0907656E-1CB7-4238-8279-251558C400FE}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {257AD1CB-DAE5-4CF6-90E1-35EDA1F868C5}

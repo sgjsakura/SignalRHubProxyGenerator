@@ -1,18 +1,27 @@
 ﻿using System;
-using System.Runtime.CompilerServices;
-using System.Security.Cryptography.X509Certificates;
-using System.Text;
-using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
-namespace Sakura.AspNetCore.SignalR.HubProxyGenerators
+namespace Sakura.AspNetCore.SignalR.HubProxyGenerators;
+
+/// <summary>
+///     Provide methods to generate SignalR client callback message handlers.
+/// </summary>
+public abstract class ClientCallbackGenerator
 {
 	/// <summary>
-	/// Provide methods to generate SignalR client callback message handlers.
+	///     Generate client callback methods for a hub proxy type.
 	/// </summary>
-	public abstract class ClientCallbackGenerator
-	{
-		public abstract ClassDeclarationSyntax Generate(SemanticModel model, ClassDeclarationSyntax classDeclaration, Type hubClientType);
-	}
+	/// <param name="model">The <see cref="SemanticModel" /> instance used to provide semantic data.</param>
+	/// <param name="classDeclaration">
+	///     The <see cref="ClassDeclarationSyntax" /> instance represents as the new created hub
+	///     proxy class.
+	/// </param>
+	/// <param name="hubClientType">The <see cref="Type" /> definition of the hub client interface.</param>
+	/// <returns>
+	///     The generated new <see cref="ClassDeclarationSyntax" /> for the hub proxy used to replace the original
+	///     <paramref name="classDeclaration" /> instance.
+	/// </returns>
+	public abstract ClassDeclarationSyntax Generate(SemanticModel model, ClassDeclarationSyntax classDeclaration,
+		Type hubClientType);
 }
