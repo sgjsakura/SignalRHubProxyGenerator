@@ -20,19 +20,18 @@ To generate SignalR strong-typed client hub proxies, you should take the followi
 
 2. Add a package reference of [`Sakura.AspNetCore.SignalR.HubProxyGenerators`](https://www.nuget.org/packages/Sakura.AspNetCore.SignalR.HubProxyGenerators), this is a source generator package and thus it will be listed in the `Analyzers` nodes in your project after you installed it.
 
-3. Provide necessary information for hub proxy generation, you should at least take 2 steps in order to make the generation process work:
-
-- Add a `NetCoreRuntimeLocation` attribute to specify the install location of ASP.NET Core shared framework libraries, this is important because the generation engine must load them to detect SignalR Hub related type information. Usually they will be located at `C:\Program Files\dotnet\packs`, thus you may set the attribute like:
-```C#
-[assembly: NetCoreRuntimeLocation(@"C:\Program Files\dotnet\packs")]
-```
+3. Provide necessary information for hub proxy generation:
 
 - Add a `HubProxyGeneration` attribute to locate the library which contains the hub server type and control various generating settings, an example may be:
 ```C#
-[assembly: HubProxyGeneration(HubAssemblyPath = "full\path\to\your\web\server\assembly.dll", RootNamespace = "Your.Preferred.Namespace.For.Clients")]
+[assembly: HubProxyGeneration(HubAssemblyPath = "full\path\to\your\web\server\assembly.dll", RootNamespace = "Your.Preferred.Namespace.For.Clients", AdditionalAssemblyDirectories = new []{@"%ProgramFiles%\dotnet\shared\Microsoft.NETCore.App\7.0.0", @"%ProgramFiles%\dotnet\shared\Microsoft.AspNetCore.App\7.0.0")]
 ```
+Some important things you must know for this step:
+- You must specify the full path of the assembly dll, relative path will never work, this is because source generators is designed as no project file access permission, and thus the working directory for them will always be the directory of the C# compiler aka the `csc.exe`.
+- All the asssemblies located at the same directory of the target assembly will be automatically imported for analyzing, however, typical ASP.NET Core web apps will not copy the common runtime assemblies of .NET core and ASP.NET because it assumes the deployment environment has already installed the runtime globally (unless you select to use the `standalone` publish mode for your project). Under such circumstance, you must specify the install location for all the shared runtime assemblies using the `AdditionalAssemblyDirectories` attribute property.
+- Multiple versions of .NET runtime can be side-by-side installed in the same system, so you must select the correct directory which matching the version of your target assembly, otherwise, the loading process cannot run successfully.
 
-Now you may build you project and Visual Studio will automatically call the source generator to generate hub client types.
+4. Now you may build you project and Visual Studio will automatically call the source generator to generate hub client types.
 
 ### Using Strong-Typed Hub Proxy Class
 
