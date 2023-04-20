@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Linq;
+
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -10,16 +12,41 @@ namespace Sakura.AspNetCore.SignalR.HubProxyGenerators;
 /// </summary>
 internal static class SemanticModelHelpers
 {
-	public static INamedTypeSymbol GetEquivalentType(this SemanticModel model, Type type)
+	public static ITypeSymbol GetEquivalentType(this SemanticModel model, Type type)
 	{
+		if (type.IsArray)
+		{
+			var arrayBaseType = model.GetEquivalentType(type.GetElementType()!);
+			return model.Compilation.CreateArrayTypeSymbol(arrayBaseType, type.GetArrayRank());
+		}
+
+		if (type.IsPointer)
+		{
+			var pointerBaseType = model.GetEquivalentType(type.GetElementType()!);
+			return model.Compilation.CreatePointerTypeSymbol(pointerBaseType);
+		}
+
+		if (type is { IsGenericType: true, IsGenericTypeDefinition: false })
+		{
+			var genericBase = type.GetGenericTypeDefinition();
+			var genericBaseEquivalent = model.Compilation.GetTypeByMetadataName(genericBase.FullName!)!;
+
+			var typeArguments =
+				from t in type.GetGenericArguments()
+				let te = model.GetEquivalentType(t)
+				select te;
+
+			return genericBaseEquivalent.Construct(typeArguments.ToArray());
+		}
+
 		return model.Compilation.GetTypeByMetadataName(type.FullName ??
-		                                               throw new InvalidOperationException(
-			                                               "The target type does not have a valid full name."))
-		       ?? throw new InvalidOperationException(
-			       $"Cannot get type \"{type.FullName}\"'s equivalent in the source code context.");
+													   throw new InvalidOperationException(
+														   $"The target type {type} does not have a valid full name."))
+			   ?? throw new InvalidOperationException(
+				   $"Cannot get type \"{type.FullName}\"'s equivalent in the source code context.");
 	}
 
-	public static INamedTypeSymbol GetEquivalentType<T>(this SemanticModel model)
+	public static ITypeSymbol GetEquivalentType<T>(this SemanticModel model)
 	{
 		return model.GetEquivalentType(typeof(T));
 	}
@@ -32,8 +59,8 @@ internal static class SemanticModelHelpers
 	public static TypeSyntax GetTypeSyntax(this SemanticModel model, Type type)
 	{
 		return (model.GetEquivalentType(type) ??
-		        throw new InvalidOperationException(
-			        $"Cannot get type \"{type.FullName}\"'s equivalent in the source code context."))
+				throw new InvalidOperationException(
+					$"Cannot get type \"{type.FullName}\"'s equivalent in the source code context."))
 			.ToTypeSyntax(model);
 	}
 

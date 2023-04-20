@@ -6,10 +6,13 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
+
 using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+
 using Sakura.AspNetCore.SignalR.HubProxies;
+
 using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 using static Microsoft.CodeAnalysis.CSharp.SyntaxKind;
 
@@ -57,100 +60,92 @@ public class SignalRHubProxyGenerator : IIncrementalGenerator
 	/// <exception cref="InvalidOperationException"></exception>
 	private void GenerateProxyForAttribute(SourceProductionContext context, Compilation compilation, AttributeData attr)
 	{
-		try
+		var dllPath =
+					attr.GetValue<string?>(nameof(HubProxyGenerationAttribute.HubAssemblyPath)) ??
+					throw new InvalidOperationException(
+						$"the required attribute {nameof(HubProxyGenerationAttribute.HubAssemblyPath)} is not specified and no proxy will be generated.");
+
+		var dllDirectory = Path.GetDirectoryName(Environment.ExpandEnvironmentVariables(dllPath))
+						   ?? throw new InvalidOperationException(
+							   $"Cannot get the parent directory path for dll path \"{dllPath}\", assembly resolving will not work");
+
+
+		var additionalPaths =
+			attr.GetValues<string>(nameof(HubProxyGenerationAttribute.AdditionalAssemblyDirectories));
+
+		var excludedFiles =
+			attr.GetValues<string>(nameof(HubProxyGenerationAttribute.ExcludedAssemblyFileNames)).ToArray();
+
+		var assemblyList = new List<string>();
+
+
+		var validAdditionalAssemblies =
+			from path in additionalPaths
+			from fileName in Directory.EnumerateFiles(Environment.ExpandEnvironmentVariables(path), "*.dll")
+			where !excludedFiles.Contains(Path.GetFileName(fileName), StringComparer.OrdinalIgnoreCase)
+			select fileName;
+
+		// Core assembly
+		assemblyList.AddRange(Directory.EnumerateFiles(dllDirectory, "*.dll"));
+
+		// Additional assemblies
+		assemblyList.AddRange(validAdditionalAssemblies);
+
+
+		var resolver = new PathAssemblyResolver(assemblyList);
+		using var loadContext = new MetadataLoadContext(resolver);
+
+		var asm = loadContext.LoadFromAssemblyPath(dllPath);
+
+		// Create unit as new code root
+		var compilationUnit = CompilationUnit();
+
+		// Add to compilation, not the returned value is used for get semantic model only.
+		//var compilation = context.Compilation.AddSyntaxTrees(compilationUnit.SyntaxTree);
+
+		compilation = compilation.AddSyntaxTrees(compilationUnit.SyntaxTree);
+
+		// create semantic model
+		var model = compilation.GetSemanticModel(compilationUnit.SyntaxTree);
+
+		var typeList = new List<MemberDeclarationSyntax>();
+
+		foreach (var type in asm.DefinedTypes)
 		{
-			var dllPath =
-				attr.GetValue<string?>(nameof(HubProxyGenerationAttribute.HubAssemblyPath)) ??
-				throw new InvalidOperationException(
-					$"the required attribute {nameof(HubProxyGenerationAttribute.HubAssemblyPath)} is not specified and no proxy will be generated.");
+			var hubType = TryLoadBaseHubType(type);
 
-			var dllDirectory = Path.GetDirectoryName(Environment.ExpandEnvironmentVariables(dllPath))
-			                   ?? throw new InvalidOperationException(
-				                   $"Cannot get the parent directory path for dll path \"{dllPath}\", assembly resolving will not work");
+			// A hub must as an hub base type, and cannot be abstract of definitive type.
+			if (hubType == null || type.IsAbstract || type.IsGenericTypeDefinition) continue;
 
-
-			var additionalPaths =
-				attr.GetValues<string>(nameof(HubProxyGenerationAttribute.AdditionalAssemblyDirectories));
-
-			var excludedFiles =
-				attr.GetValues<string>(nameof(HubProxyGenerationAttribute.ExcludedAssemblyFileNames)).ToArray();
-
-			var assemblyList = new List<string>();
-
-
-			var validAdditionalAssemblies =
-				from path in additionalPaths
-				from fileName in Directory.EnumerateFiles(Environment.ExpandEnvironmentVariables(path), "*.dll")
-				where !excludedFiles.Contains(Path.GetFileName(fileName), StringComparer.OrdinalIgnoreCase)
-				select fileName;
-
-			// Core assembly
-			assemblyList.AddRange(Directory.EnumerateFiles(dllDirectory, "*.dll"));
-
-			// Additional assemblies
-			assemblyList.AddRange(validAdditionalAssemblies);
-
-
-			var resolver = new PathAssemblyResolver(assemblyList);
-			using var loadContext = new MetadataLoadContext(resolver);
-
-			var asm = loadContext.LoadFromAssemblyPath(dllPath);
-
-			// Create unit as new code root
-			var compilationUnit = CompilationUnit();
-
-			// Add to compilation, not the returned value is used for get semantic model only.
-			//var compilation = context.Compilation.AddSyntaxTrees(compilationUnit.SyntaxTree);
-
-			compilation = compilation.AddSyntaxTrees(compilationUnit.SyntaxTree);
-
-			// create semantic model
-			var model = compilation.GetSemanticModel(compilationUnit.SyntaxTree);
-
-			var typeList = new List<MemberDeclarationSyntax>();
-
-			foreach (var type in asm.DefinedTypes)
-			{
-				var hubType = TryLoadBaseHubType(type);
-
-				// A hub must as an hub base type, and cannot be abstract of definitive type.
-				if (hubType == null || type.IsAbstract || type.IsGenericTypeDefinition) continue;
-
-				var clientTypeName = string.Format(CultureInfo.InvariantCulture,
-					attr.GetValue<string?>(nameof(HubProxyGenerationAttribute
-						.TypeNameFormat)) ?? HubProxyGenerationAttribute.DefaultTypeNameFormat, type.Name);
-				// Add class
-				var classDecl = GenerateProxyForHubType(model, clientTypeName, type, hubType);
-				typeList.Add(classDecl);
-			}
-
-
-			// Try get global namespace
-			var nsName = attr.GetValue<string?>(nameof(HubProxyGenerationAttribute.RootNamespace));
-
-			if (!string.IsNullOrEmpty(nsName))
-			{
-				// Root namespace
-				var namespaceDecl = GenerateNamespace(nsName!).AddMembers(typeList.ToArray());
-
-				// Add namespace to unit
-				compilationUnit = compilationUnit.AddMembers(namespaceDecl);
-			}
-			else
-			{
-				compilationUnit = compilationUnit.AddMembers(typeList.ToArray());
-			}
-
-
-			// generate code
-			var code = compilationUnit.NormalizeWhitespace().ToFullString();
-			context.AddSource(Path.GetFileNameWithoutExtension(dllPath), code);
+			var clientTypeName = string.Format(CultureInfo.InvariantCulture,
+				attr.GetValue<string?>(nameof(HubProxyGenerationAttribute
+					.TypeNameFormat)) ?? HubProxyGenerationAttribute.DefaultTypeNameFormat, type.Name);
+			// Add class
+			var classDecl = GenerateProxyForHubType(model, clientTypeName, type, hubType);
+			typeList.Add(classDecl);
 		}
-		catch (Exception ex)
+
+
+		// Try get global namespace
+		var nsName = attr.GetValue<string?>(nameof(HubProxyGenerationAttribute.RootNamespace));
+
+		if (!string.IsNullOrEmpty(nsName))
 		{
-			var message = $"source:{ex.Source}, stack: {ex.StackTrace}, message: {ex.Message}";
-			throw new InvalidOperationException(message.Replace("\r", "").Replace("\n", ""));
+			// Root namespace
+			var namespaceDecl = GenerateNamespace(nsName!).AddMembers(typeList.ToArray());
+
+			// Add namespace to unit
+			compilationUnit = compilationUnit.AddMembers(namespaceDecl);
 		}
+		else
+		{
+			compilationUnit = compilationUnit.AddMembers(typeList.ToArray());
+		}
+
+
+		// generate code
+		var code = compilationUnit.NormalizeWhitespace().ToFullString();
+		context.AddSource(Path.GetFileNameWithoutExtension(dllPath), code);
 	}
 
 	/// <summary>
@@ -181,7 +176,7 @@ public class SignalRHubProxyGenerator : IIncrementalGenerator
 		{
 			// The client type is the generic argument of Hub<T>
 			if (currentType.IsGenericType &&
-			    currentType.GetGenericTypeDefinition().FullName == StrongClientHubTypeFullName)
+				currentType.GetGenericTypeDefinition().FullName == StrongClientHubTypeFullName)
 				return currentType.GenericTypeArguments[0];
 
 			currentType = currentType.BaseType;
@@ -270,7 +265,7 @@ public class SignalRHubProxyGenerator : IIncrementalGenerator
 		{
 			// Must be ordinary instance public method
 			if (method.IsStatic || method.IsAbstract || method.IsSpecialName || method.IsConstructor ||
-			    !method.IsPublic) continue;
+				!method.IsPublic) continue;
 
 			// Ignore any members defined in the basic hub type.
 			if (IsDefinedAtBaseTypes(method)) continue;

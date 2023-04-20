@@ -44,7 +44,7 @@
 		<RepositoryUrl>https://github.com/sgjsakura/SignalRHubProxyGenerator.git</RepositoryUrl>
 		<RepositoryType>git</RepositoryType>
 		<PackageTags>aspnetcore signalr sourcegenerator</PackageTags>
-		<PackageReleaseNotes>Update to 2.0.</PackageReleaseNotes>
+		<PackageReleaseNotes>Fix generation error.</PackageReleaseNotes>
 		<Authors>Iris Sakura</Authors>
 		<Company>Iris Sakura</Company>
 		<Description>Generate strong typed proxy with client message callback support for SignalR hub services.</Description>
@@ -55,7 +55,7 @@
 		<DocumentationFile></DocumentationFile>
 		<WarningLevel>9999</WarningLevel>
 		<CheckForOverflowUnderflow>True</CheckForOverflowUnderflow>
-		<Version>2.0.0</Version>
+		<Version>2.0.2</Version>
 		<PackageReadmeFile>readme.md</PackageReadmeFile>
 	</PropertyGroup>
 
