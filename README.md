@@ -24,7 +24,7 @@ To generate SignalR strong-typed client hub proxies, you should take the followi
 
 - Add a `HubProxyGeneration` attribute to locate the library which contains the hub server type and control various generating settings, an example may be:
 ```C#
-[assembly: HubProxyGeneration(HubAssemblyPath = "full\path\to\your\web\server\assembly.dll", RootNamespace = "Your.Preferred.Namespace.For.Clients", AdditionalAssemblyDirectories = new []{@"%ProgramFiles%\dotnet\shared\Microsoft.NETCore.App\7.0.0", @"%ProgramFiles%\dotnet\shared\Microsoft.AspNetCore.App\7.0.0")]
+[assembly: HubProxyGeneration(HubAssemblyPath = @"full\path\to\your\web\server\assembly.dll", RootNamespace = "Your.Preferred.Namespace.For.Clients", AdditionalAssemblyDirectories = new []{@"%ProgramFiles%\dotnet\shared\Microsoft.NETCore.App\7.0.0", @"%ProgramFiles%\dotnet\shared\Microsoft.AspNetCore.App\7.0.0")]
 ```
 Some important things you must know for this step:
 - You must specify the full path of the assembly dll, relative path will never work, this is because source generators is designed as no project file access permission, and thus the working directory for them will always be the directory of the C# compiler aka the `csc.exe`.
