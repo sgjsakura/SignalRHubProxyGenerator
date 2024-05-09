@@ -91,11 +91,11 @@ Although types with same full name are rare, you may have to change the type nam
 
 #### Server Method Generation
 
-Any type which has the type `Microsoft.AspNetCore.SignalR.Hub` in its base type chain will be considered as a hub type, excepts for abstract of open generic types.
+Any type which has the type `Microsoft.AspNetCore.SignalR.Hub` in its base type chain will be considered as a hub type, excepts for abstract or open generic ones.
 
 This generator will generate proxy methods for all methods defined on the server hub type (also includes derived ones if your hub has a complex inheritance chain), while methods coming from the base `Hub` type or lower inheritance positions will be ignored.
 
-A hub method must be public and non-static, also it have a return type of `Task` or `Task<T>`, otherwise the method will not be considerd as a hub method and will be ignored during the proxy generation. 
+A hub method must be public and non-static, with a return type of `Task` or `Task<T>`, otherwise the method will not be considerd as a hub method and will be ignored during the proxy generation. 
 
 #### Client Event Generation
 
